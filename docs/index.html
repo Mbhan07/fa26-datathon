@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Oxygen Gap: Ward View</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --ink:#1d2327; --muted:#5c6670; --line:#dcd7cc; --card:#fffdf9;
+    --normal:#2f7d5b; --low:#c99a1e; --medium:#df7431; --high:#b8322a; --flag:#2b5fb8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  header{padding:28px 32px 8px;max-width:1280px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:30px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--muted);max-width:820px;margin:0}
+  main{max-width:1280px;margin:0 auto;padding:12px 32px 40px;display:grid;grid-template-columns:1fr 340px;gap:24px}
+  .controls{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:16px}
+  .ctl label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{border:0;background:transparent;padding:7px 14px;font:inherit;cursor:pointer;color:var(--ink)}
+  .seg button.on{background:var(--ink);color:#fff}
+  input[type=range]{width:200px;accent-color:var(--ink)}
+  .val{font-variant-numeric:tabular-nums;font-weight:600;margin-left:8px}
+  .switch{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+  .switch input{width:16px;height:16px;accent-color:var(--ink)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+  .stat b{display:block;font-size:30px;font-family:Georgia,serif;font-variant-numeric:tabular-nums;line-height:1.1}
+  .stat span{color:var(--muted);font-size:13px}
+  .stat.alert b{color:var(--high)}
+  .ward{display:grid;grid-template-columns:repeat(10,1fr);gap:8px}
+  .bed{position:relative;border-radius:10px;padding:8px 6px 7px;color:#fff;cursor:pointer;text-align:center;
+       transition:background .45s ease, box-shadow .3s ease, transform .15s ease;min-height:74px;border:0;font:inherit}
+  .bed:hover{transform:translateY(-2px)}
+  .bed .n{font-size:11px;opacity:.85}
+  .bed .o{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .bed .r{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;opacity:.95}
+  .bed.sel{box-shadow:0 0 0 3px var(--ink)}
+  .bed.hidden-reveal{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--high)}
+  .bed.hidden-reveal.sel{box-shadow:0 0 0 3px var(--ink),0 0 0 6px var(--high)}
+  .bed .flag{position:absolute;top:4px;right:5px;background:#fff;color:var(--flag);border-radius:50%;width:17px;height:17px;
+             font-size:11px;font-weight:800;line-height:17px;display:none}
+  .bed.flagged .flag{display:block}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:13px}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  aside{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;align-self:start;position:sticky;top:16px}
+  aside h2{font-family:Georgia,serif;font-weight:600;margin:0 0 2px;font-size:22px}
+  .stat em{font-style:normal;font-size:12px}
+  aside .muted{color:var(--muted);font-size:13px}
+  .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .row:last-child{border-bottom:0}
+  .pill{display:inline-block;padding:1px 9px;border-radius:999px;color:#fff;font-size:12.5px;font-weight:600}
+  .callout{margin-top:12px;padding:10px 12px;border-radius:8px;background:#f1ece2;font-size:13.5px}
+  .callout.bad{background:#f7e2df}
+  .callout.good{background:#e1ecf8}
+  .bars{margin-top:10px}
+  .bar{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+  .bar .track{flex:1;height:9px;background:#ece6da;border-radius:5px;overflow:hidden}
+  .bar .fill{height:100%;background:var(--ink);transition:width .4s ease}
+  footer{max-width:1280px;margin:0 auto;padding:0 32px 36px;color:var(--muted);font-size:12.5px}
+  @media (max-width:980px){main{grid-template-columns:1fr} .ward{grid-template-columns:repeat(5,1fr)} aside{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>The Oxygen Gap: Ward View</h1>
+  <p class="sub">Fifty real patients from the Health Risk dataset. Each bed shows what a nurse would see: the pulse-oximeter reading and the NEWS2 risk it produces. The oximeter error comes from paired oximeter and blood-gas measurements in the OpenOximetry Repository, by measured skin tone.</p>
+</header>
+<main>
+  <section>
+    <div class="controls">
+      <div class="ctl"><label>Oximeter error profile</label>
+        <div class="seg" id="profile"><button data-v="light" class="on">Light skin</button><button data-v="dark">Dark skin</button></div></div>
+      <div class="ctl"><label>Extra dark-skin overestimation (hypothetical)</label>
+        <input type="range" id="offset" min="0" max="6" step="1" value="0"><span class="val" id="offv">+0.0 pts</span></div>
+      <div class="ctl"><label class="switch"><input type="checkbox" id="reveal"> Reveal hidden risk</label>
+        <label class="switch"><input type="checkbox" id="second" checked> Show second-check flags</label></div>
+    </div>
+    <div class="stats">
+      <div class="stat alert"><b id="sHidden">0</b><span>beds shown at a lower risk than they really are<br><em>expected over 1,000 simulations: <span id="eHidden"></span></em></span></div>
+      <div class="stat alert"><b id="sMed">0</b><span>Medium-risk patients shown as Low (urgent review missed)<br><em>expected: <span id="eMed"></span></em></span></div>
+      <div class="stat"><b id="sCaught">0</b><span>hidden beds caught by the oximeter-free second check</span></div>
+    </div>
+    <div class="ward" id="ward"></div>
+    <div class="legend">
+      <span><i style="background:var(--normal)"></i>Normal</span><span><i style="background:var(--low)"></i>Low</span>
+      <span><i style="background:var(--medium)"></i>Medium</span><span><i style="background:var(--high)"></i>High</span>
+      <span><i style="background:#fff;border:2px solid var(--high)"></i>Risk hidden (when revealed)</span>
+      <span><i style="background:#fff;color:var(--flag);border:1px solid var(--flag)"></i>Second check: "take another look"</span>
+    </div>
+  </section>
+  <aside id="detail"><h2>Select a bed</h2><p class="muted">Click any bed to see the patient's true vitals, what the oximeter displays, and how likely that reading is to hide their risk.</p></aside>
+</main>
+<footer>
+  Teaching dataset and simulation, not a clinical tool. True oxygen = the dataset's SpO<sub>2</sub> (no blood gas available). Oximeter error: OpenOximetry Repository (UCSF Hypoxia Lab, PhysioNet), healthy volunteers in controlled lab desaturation; error sampled by measured Monk skin tone and true-oxygen band. Each bed uses one fixed random draw so readings move consistently as bias increases; "chance of downgrade" is from 1,000 simulated readings. Extra overestimation is a hypothetical scenario: hospital studies report larger gaps than the lab (Sjoding et al., NEJM 2020). Risk = NEWS2 (Royal College of Physicians, 2017). Second check = gradient-boosting model trained without SpO<sub>2</sub>, out-of-fold.
+</footer>
+<script>
+const D = {"beds": [{"id": "P0836", "rr": 31, "spo2": 86, "scale": 1, "o2": 1, "sbp": 86, "hr": 127, "temp": 37.2, "avpu": "A", "true": 3, "second": 3}, {"id": "P0634", "rr": 23, "spo2": 94, "scale": 2, "o2": 0, "sbp": 104, "hr": 102, "temp": 38.3, "avpu": "A", "true": 2, "second": 2}, {"id": "P0953", "rr": 28, "spo2": 84, "scale": 2, "o2": 1, "sbp": 72, "hr": 107, "temp": 41.5, "avpu": "A", "true": 3, "second": 3}, {"id": "P0549", "rr": 28, "spo2": 93, "scale": 1, "o2": 0, "sbp": 120, "hr": 106, "temp": 37.8, "avpu": "A", "true": 2, "second": 2}, {"id": "P0972", "rr": 24, "spo2": 88, "scale": 1, "o2": 1, "sbp": 95, "hr": 134, "temp": 36.7, "avpu": "A", "true": 3, "second": 3}, {"id": "P0848", "rr": 29, "spo2": 91, "scale": 1, "o2": 1, "sbp": 78, "hr": 129, "temp": 39.2, "avpu": "A", "true": 3, "second": 3}, {"id": "P0669", "rr": 28, "spo2": 94, "scale": 1, "o2": 0, "sbp": 105, "hr": 106, "temp": 38.0, "avpu": "A", "true": 2, "second": 2}, {"id": "P0161", "rr": 20, "spo2": 95, "scale": 1, "o2": 0, "sbp": 114, "hr": 88, "temp": 37.1, "avpu": "A", "true": 1, "second": 1}, {"id": "P0882", "rr": 28, "spo2": 85, "scale": 1, "o2": 1, "sbp": 90, "hr": 153, "temp": 40.0, "avpu": "A", "true": 3, "second": 3}, {"id": "P0065", "rr": 13, "spo2": 97, "scale": 1, "o2": 0, "sbp": 119, "hr": 66, "temp": 36.6, "avpu": "A", "true": 0, "second": 0}, {"id": "P0440", "rr": 21, "spo2": 93, "scale": 1, "o2": 0, "sbp": 105, "hr": 86, "temp": 37.6, "avpu": "A", "true": 2, "second": 1}, {"id": "P0452", "rr": 20, "spo2": 94, "scale": 1, "o2": 1, "sbp": 122, "hr": 96, "temp": 38.6, "avpu": "A", "true": 2, "second": 2}, {"id": "P0057", "rr": 16, "spo2": 98, "scale": 1, "o2": 0, "sbp": 116, "hr": 66, "temp": 37.2, "avpu": "A", "true": 0, "second": 0}, {"id": "P0183", "rr": 17, "spo2": 96, "scale": 1, "o2": 0, "sbp": 116, "hr": 90, "temp": 38.1, "avpu": "A", "true": 1, "second": 1}, {"id": "P0678", "rr": 25, "spo2": 95, "scale": 1, "o2": 0, "sbp": 125, "hr": 102, "temp": 37.3, "avpu": "A", "true": 2, "second": 2}, {"id": "P0298", "rr": 20, "spo2": 95, "scale": 1, "o2": 0, "sbp": 108, "hr": 89, "temp": 36.9, "avpu": "A", "true": 1, "second": 1}, {"id": "P0136", "rr": 16, "spo2": 98, "scale": 1, "o2": 0, "sbp": 130, "hr": 66, "temp": 37.2, "avpu": "A", "true": 0, "second": 0}, {"id": "P0841", "rr": 27, "spo2": 97, "scale": 2, "o2": 1, "sbp": 89, "hr": 123, "temp": 38.5, "avpu": "V", "true": 3, "second": 3}, {"id": "P0608", "rr": 24, "spo2": 95, "scale": 1, "o2": 0, "sbp": 106, "hr": 92, "temp": 38.0, "avpu": "A", "true": 2, "second": 2}, {"id": "P0292", "rr": 14, "spo2": 97, "scale": 1, "o2": 0, "sbp": 110, "hr": 81, "temp": 37.6, "avpu": "A", "true": 1, "second": 1}, {"id": "P0654", "rr": 20, "spo2": 91, "scale": 2, "o2": 0, "sbp": 90, "hr": 108, "temp": 39.0, "avpu": "A", "true": 2, "second": 3}, {"id": "P0330", "rr": 16, "spo2": 96, "scale": 1, "o2": 0, "sbp": 117, "hr": 92, "temp": 36.5, "avpu": "A", "true": 1, "second": 1}, {"id": "P0296", "rr": 19, "spo2": 94, "scale": 1, "o2": 0, "sbp": 117, "hr": 92, "temp": 37.9, "avpu": "A", "true": 1, "second": 2}, {"id": "P0373", "rr": 21, "spo2": 92, "scale": 1, "o2": 0, "sbp": 127, "hr": 85, "temp": 37.5, "avpu": "A", "true": 1, "second": 1}, {"id": "P0751", "rr": 34, "spo2": 86, "scale": 1, "o2": 0, "sbp": 99, "hr": 93, "temp": 39.3, "avpu": "A", "true": 3, "second": 3}, {"id": "P0048", "rr": 16, "spo2": 96, "scale": 1, "o2": 0, "sbp": 125, "hr": 73, "temp": 36.9, "avpu": "A", "true": 0, "second": 0}, {"id": "P0871", "rr": 20, "spo2": 84, "scale": 1, "o2": 0, "sbp": 63, "hr": 81, "temp": 39.7, "avpu": "V", "true": 3, "second": 3}, {"id": "P0162", "rr": 18, "spo2": 93, "scale": 1, "o2": 0, "sbp": 114, "hr": 109, "temp": 36.7, "avpu": "A", "true": 1, "second": 1}, {"id": "P0564", "rr": 21, "spo2": 93, "scale": 1, "o2": 0, "sbp": 114, "hr": 97, "temp": 37.5, "avpu": "A", "true": 2, "second": 2}, {"id": "P0210", "rr": 20, "spo2": 97, "scale": 1, "o2": 0, "sbp": 141, "hr": 93, "temp": 37.4, "avpu": "A", "true": 1, "second": 1}, {"id": "P0003", "rr": 17, "spo2": 99, "scale": 1, "o2": 0, "sbp": 123, "hr": 75, "temp": 36.4, "avpu": "A", "true": 0, "second": 0}, {"id": "P0826", "rr": 29, "spo2": 96, "scale": 1, "o2": 1, "sbp": 101, "hr": 132, "temp": 39.5, "avpu": "A", "true": 3, "second": 3}, {"id": "P0068", "rr": 16, "spo2": 96, "scale": 1, "o2": 0, "sbp": 127, "hr": 75, "temp": 36.7, "avpu": "A", "true": 0, "second": 0}, {"id": "P0575", "rr": 22, "spo2": 93, "scale": 1, "o2": 0, "sbp": 113, "hr": 93, "temp": 38.2, "avpu": "A", "true": 2, "second": 2}, {"id": "P0560", "rr": 24, "spo2": 93, "scale": 1, "o2": 0, "sbp": 114, "hr": 104, "temp": 38.0, "avpu": "A", "true": 2, "second": 2}, {"id": "P0973", "rr": 27, "spo2": 88, "scale": 1, "o2": 1, "sbp": 80, "hr": 122, "temp": 39.0, "avpu": "A", "true": 3, "second": 3}, {"id": "P0892", "rr": 21, "spo2": 92, "scale": 2, "o2": 0, "sbp": 70, "hr": 154, "temp": 37.5, "avpu": "A", "true": 3, "second": 3}, {"id": "P0435", "rr": 18, "spo2": 91, "scale": 1, "o2": 1, "sbp": 113, "hr": 89, "temp": 38.9, "avpu": "A", "true": 2, "second": 2}, {"id": "P0010", "rr": 16, "spo2": 97, "scale": 1, "o2": 0, "sbp": 137, "hr": 72, "temp": 36.6, "avpu": "A", "true": 0, "second": 0}, {"id": "P0638", "rr": 20, "spo2": 92, "scale": 1, "o2": 0, "sbp": 108, "hr": 95, "temp": 38.6, "avpu": "A", "true": 2, "second": 2}, {"id": "P0512", "rr": 22, "spo2": 92, "scale": 1, "o2": 0, "sbp": 101, "hr": 93, "temp": 37.1, "avpu": "A", "true": 2, "second": 2}, {"id": "P0699", "rr": 20, "spo2": 95, "scale": 1, "o2": 0, "sbp": 96, "hr": 120, "temp": 37.8, "avpu": "A", "true": 2, "second": 2}, {"id": "P0409", "rr": 20, "spo2": 95, "scale": 1, "o2": 0, "sbp": 114, "hr": 78, "temp": 38.1, "avpu": "A", "true": 1, "second": 1}, {"id": "P0600", "rr": 20, "spo2": 88, "scale": 1, "o2": 0, "sbp": 134, "hr": 108, "temp": 38.0, "avpu": "A", "true": 2, "second": 2}, {"id": "P0740", "rr": 33, "spo2": 79, "scale": 1, "o2": 1, "sbp": 81, "hr": 119, "temp": 39.0, "avpu": "A", "true": 3, "second": 3}, {"id": "P0071", "rr": 13, "spo2": 97, "scale": 1, "o2": 0, "sbp": 118, "hr": 79, "temp": 36.3, "avpu": "A", "true": 0, "second": 0}, {"id": "P0692", "rr": 22, "spo2": 92, "scale": 2, "o2": 0, "sbp": 98, "hr": 108, "temp": 38.8, "avpu": "A", "true": 2, "second": 2}, {"id": "P0019", "rr": 13, "spo2": 97, "scale": 1, "o2": 0, "sbp": 127, "hr": 80, "temp": 36.4, "avpu": "A", "true": 0, "second": 0}, {"id": "P0711", "rr": 16, "spo2": 91, "scale": 1, "o2": 0, "sbp": 120, "hr": 111, "temp": 38.5, "avpu": "A", "true": 2, "second": 2}, {"id": "P0384", "rr": 20, "spo2": 96, "scale": 1, "o2": 0, "sbp": 112, "hr": 95, "temp": 35.9, "avpu": "A", "true": 1, "second": 1}], "scenarios": {"light|0.0": {"shown": [89, 94, 82, 93, 91, 92, 94, 96, 85, 99, 94, 95, 99, 98, 96, 95, 98, 100, 98, 99, 91, 100, 96, 94, 87, 96, 83, 96, 94, 97, 100, 98, 96, 96, 95, 90, 93, 93, 99, 94, 92, 96, 94, 89, 78, 97, 92, 99, 91, 99], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 2, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 2, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.717, 0.0, 0.0, 0.734, 0.43, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.727, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.712, 0.0, 0.0, 0.0, 0.0, 0.178, 0.715, 0.0, 0.0, 0.197, 0.0, 0.464, 0.034, 0.726, 0.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.196, 0.0], "exp_hidden": 6.0, "exp_med": 5.3}, "light|0.5": {"shown": [89, 94, 82, 93, 91, 92, 94, 96, 85, 99, 94, 95, 99, 98, 96, 95, 98, 100, 98, 99, 91, 100, 96, 94, 87, 96, 83, 96, 94, 97, 100, 98, 96, 96, 95, 90, 93, 93, 99, 94, 92, 96, 94, 89, 78, 97, 92, 99, 91, 99], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 2, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 2, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.717, 0.0, 0.0, 0.734, 0.43, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.727, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.712, 0.0, 0.0, 0.0, 0.0, 0.178, 0.715, 0.0, 0.0, 0.197, 0.0, 0.464, 0.034, 0.726, 0.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.196, 0.0], "exp_hidden": 6.0, "exp_med": 5.3}, "light|1.0": {"shown": [89, 94, 82, 93, 91, 92, 94, 96, 85, 99, 94, 95, 99, 98, 96, 95, 98, 100, 98, 99, 91, 100, 96, 94, 87, 96, 83, 96, 94, 97, 100, 98, 96, 96, 95, 90, 93, 93, 99, 94, 92, 96, 94, 89, 78, 97, 92, 99, 91, 99], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 2, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 2, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.717, 0.0, 0.0, 0.734, 0.43, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.727, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.712, 0.0, 0.0, 0.0, 0.0, 0.178, 0.715, 0.0, 0.0, 0.197, 0.0, 0.464, 0.034, 0.726, 0.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.196, 0.0], "exp_hidden": 6.0, "exp_med": 5.3}, "light|1.5": {"shown": [89, 94, 82, 93, 91, 92, 94, 96, 85, 99, 94, 95, 99, 98, 96, 95, 98, 100, 98, 99, 91, 100, 96, 94, 87, 96, 83, 96, 94, 97, 100, 98, 96, 96, 95, 90, 93, 93, 99, 94, 92, 96, 94, 89, 78, 97, 92, 99, 91, 99], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 2, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 2, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.717, 0.0, 0.0, 0.734, 0.43, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.727, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.712, 0.0, 0.0, 0.0, 0.0, 0.178, 0.715, 0.0, 0.0, 0.197, 0.0, 0.464, 0.034, 0.726, 0.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.196, 0.0], "exp_hidden": 6.0, "exp_med": 5.3}, "light|2.0": {"shown": [89, 94, 82, 93, 91, 92, 94, 96, 85, 99, 94, 95, 99, 98, 96, 95, 98, 100, 98, 99, 91, 100, 96, 94, 87, 96, 83, 96, 94, 97, 100, 98, 96, 96, 95, 90, 93, 93, 99, 94, 92, 96, 94, 89, 78, 97, 92, 99, 91, 99], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 2, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 2, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.717, 0.0, 0.0, 0.734, 0.43, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.727, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.712, 0.0, 0.0, 0.0, 0.0, 0.178, 0.715, 0.0, 0.0, 0.197, 0.0, 0.464, 0.034, 0.726, 0.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.196, 0.0], "exp_hidden": 6.0, "exp_med": 5.3}, "light|2.5": {"shown": [89, 94, 82, 93, 91, 92, 94, 96, 85, 99, 94, 95, 99, 98, 96, 95, 98, 100, 98, 99, 91, 100, 96, 94, 87, 96, 83, 96, 94, 97, 100, 98, 96, 96, 95, 90, 93, 93, 99, 94, 92, 96, 94, 89, 78, 97, 92, 99, 91, 99], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 2, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 2, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.717, 0.0, 0.0, 0.734, 0.43, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.727, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.712, 0.0, 0.0, 0.0, 0.0, 0.178, 0.715, 0.0, 0.0, 0.197, 0.0, 0.464, 0.034, 0.726, 0.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.196, 0.0], "exp_hidden": 6.0, "exp_med": 5.3}, "light|3.0": {"shown": [89, 94, 82, 93, 91, 92, 94, 96, 85, 99, 94, 95, 99, 98, 96, 95, 98, 100, 98, 99, 91, 100, 96, 94, 87, 96, 83, 96, 94, 97, 100, 98, 96, 96, 95, 90, 93, 93, 99, 94, 92, 96, 94, 89, 78, 97, 92, 99, 91, 99], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 2, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 2, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.717, 0.0, 0.0, 0.734, 0.43, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.727, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.712, 0.0, 0.0, 0.0, 0.0, 0.178, 0.715, 0.0, 0.0, 0.197, 0.0, 0.464, 0.034, 0.726, 0.0, 0.15, 0.0, 0.0, 0.0, 0.0, 0.196, 0.0], "exp_hidden": 6.0, "exp_med": 5.3}, "dark|0.0": {"shown": [90, 94, 81, 92, 91, 92, 94, 96, 84, 99, 94, 95, 98, 98, 96, 94, 97, 100, 98, 99, 91, 100, 96, 94, 88, 96, 83, 96, 94, 97, 99, 98, 96, 96, 95, 91, 93, 93, 99, 94, 91, 96, 94, 90, 80, 97, 91, 99, 91, 99], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 2, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 2, 0, 1, 3, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.665, 0.0, 0.0, 0.68, 0.418, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.668, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.66, 0.0, 0.0, 0.0, 0.0, 0.19, 0.644, 0.0, 0.0, 0.21, 0.0, 0.451, 0.064, 0.667, 0.0, 0.224, 0.0, 0.0, 0.0, 0.0, 0.209, 0.0], "exp_hidden": 5.8, "exp_med": 5.1}, "dark|0.5": {"shown": [91, 94, 81, 93, 92, 93, 94, 97, 85, 100, 95, 95, 99, 98, 96, 95, 98, 100, 99, 100, 92, 100, 97, 95, 88, 97, 83, 97, 95, 97, 100, 98, 96, 96, 96, 92, 93, 93, 99, 94, 92, 96, 94, 90, 80, 97, 92, 99, 91, 100], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 2, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 2, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.779, 0.0, 0.0, 0.79, 0.533, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.781, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.773, 0.0, 0.0, 0.0, 0.0, 0.3, 0.772, 0.0, 0.0, 0.316, 0.0, 0.58, 0.115, 0.783, 0.0, 0.296, 0.0, 0.0, 0.0, 0.0, 0.299, 0.0], "exp_hidden": 7.1, "exp_med": 6.3}, "dark|1.0": {"shown": [91, 95, 82, 93, 92, 93, 95, 97, 85, 100, 95, 96, 99, 99, 97, 95, 98, 100, 99, 100, 92, 100, 97, 95, 89, 97, 84, 97, 95, 98, 100, 99, 97, 97, 96, 92, 94, 94, 100, 95, 92, 97, 95, 91, 81, 98, 92, 100, 92, 100], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 1, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 1, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.862, 0.0, 0.0, 0.876, 0.652, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.856, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.857, 0.0, 0.0, 0.0, 0.0, 0.411, 0.85, 0.0, 0.0, 0.444, 0.0, 0.693, 0.204, 0.844, 0.0, 0.354, 0.0, 0.0, 0.0, 0.0, 0.429, 0.0], "exp_hidden": 8.3, "exp_med": 7.5}, "dark|1.5": {"shown": [92, 95, 82, 94, 93, 94, 95, 98, 86, 100, 96, 96, 100, 99, 97, 96, 99, 100, 100, 100, 93, 100, 98, 96, 89, 98, 84, 98, 96, 98, 100, 99, 97, 97, 97, 93, 94, 94, 100, 95, 93, 97, 95, 91, 81, 98, 93, 100, 92, 100], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 1, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 1, 0, 1, 2, 1, 1, 2, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.924, 0.0, 0.0, 0.929, 0.772, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.927, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.928, 0.0, 0.0, 0.0, 0.0, 0.552, 0.93, 0.0, 0.0, 0.556, 0.0, 0.789, 0.308, 0.917, 0.0, 0.454, 0.0, 0.0, 0.0, 0.0, 0.576, 0.0], "exp_hidden": 9.6, "exp_med": 8.6}, "dark|2.0": {"shown": [92, 96, 83, 94, 93, 94, 96, 98, 86, 100, 96, 97, 100, 100, 98, 96, 99, 100, 100, 100, 93, 100, 98, 96, 90, 98, 85, 98, 96, 99, 100, 100, 98, 98, 97, 93, 95, 95, 100, 96, 93, 98, 96, 92, 82, 99, 93, 100, 93, 100], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 1, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 1, 0, 1, 2, 1, 1, 1, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.964, 0.0, 0.0, 0.966, 0.861, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.961, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.968, 0.0, 0.0, 0.0, 0.0, 0.664, 0.961, 0.0, 0.0, 0.657, 0.0, 0.867, 0.44, 0.968, 0.0, 0.533, 0.0, 0.0, 0.0, 0.0, 0.685, 0.0], "exp_hidden": 10.5, "exp_med": 9.5}, "dark|2.5": {"shown": [93, 96, 83, 95, 94, 95, 96, 99, 87, 100, 97, 97, 100, 100, 98, 97, 100, 100, 100, 100, 94, 100, 99, 97, 90, 99, 85, 99, 97, 99, 100, 100, 98, 98, 98, 94, 95, 95, 100, 96, 94, 98, 96, 92, 82, 99, 94, 100, 93, 100], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 1, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 1, 0, 1, 2, 1, 1, 1, 3, 0, 2, 0, 2, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.999, 0.0, 0.0, 0.997, 0.933, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.998, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.999, 0.0, 0.0, 0.0, 0.0, 0.762, 1.0, 0.0, 0.0, 0.778, 0.0, 0.942, 0.572, 1.0, 0.0, 0.649, 0.0, 0.0, 0.0, 0.0, 0.796, 0.0], "exp_hidden": 11.4, "exp_med": 10.4}, "dark|3.0": {"shown": [93, 97, 84, 95, 94, 95, 97, 99, 87, 100, 97, 98, 100, 100, 99, 97, 100, 100, 100, 100, 94, 100, 99, 97, 91, 99, 86, 99, 97, 100, 100, 100, 99, 99, 98, 94, 96, 96, 100, 97, 94, 99, 97, 93, 83, 100, 94, 100, 94, 100], "risk": [3, 2, 3, 2, 3, 3, 2, 0, 3, 0, 1, 1, 0, 1, 2, 1, 0, 3, 1, 1, 2, 1, 1, 1, 3, 0, 3, 1, 1, 1, 0, 3, 0, 1, 1, 3, 3, 1, 0, 1, 2, 1, 1, 1, 3, 0, 2, 0, 1, 1], "p_down": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.975, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.85, 1.0, 0.0, 0.0, 0.854, 0.0, 0.972, 0.682, 1.0, 0.0, 0.714, 0.0, 0.0, 0.0, 0.0, 0.884, 0.0], "exp_hidden": 11.9, "exp_med": 10.9}}, "offsets": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0], "levels": ["Normal", "Low", "Medium", "High"]};
+const COLORS = ["var(--normal)","var(--low)","var(--medium)","var(--high)"];
+const L = D.levels;
+let profile = "light", offIdx = 0, sel = null;
+const $ = id => document.getElementById(id);
+
+function k(p){ return p + "|" + D.offsets[offIdx].toFixed(1); }
+function scen(){ return D.scenarios[k(profile)]; }
+function pill(level){ return `<span class="pill" style="background:${COLORS[level]}">${L[level]}</span>`; }
+
+function render(){
+  const s = scen(), reveal = $("reveal").checked, showFlag = $("second").checked;
+  let hidden = 0, med = 0, caught = 0;
+  $("ward").innerHTML = D.beds.map((b, i) => {
+    const shown = s.risk[i], isHidden = shown < b.true, flagged = showFlag && b.second > shown;
+    if (isHidden){ hidden++; if (b.true === 2 && shown < 2) med++; if (b.second > shown) caught++; }
+    const cls = ["bed", reveal && isHidden ? "hidden-reveal" : "", flagged ? "flagged" : "", sel === i ? "sel" : ""].join(" ");
+    return `<button class="${cls}" data-i="${i}" style="background:${COLORS[shown]}" aria-label="Bed ${i+1}">
+      <span class="flag">?</span><div class="n">Bed ${i+1}</div><div class="o">${s.shown[i]}%</div><div class="r">${L[shown]}</div></button>`;
+  }).join("");
+  $("sHidden").textContent = hidden; $("sMed").textContent = med; $("sCaught").textContent = caught + " / " + hidden;
+  $("offv").textContent = profile === "dark" ? "+" + D.offsets[offIdx].toFixed(1) + " pts" : "n/a (light = as measured)";
+  $("offset").disabled = profile !== "dark";
+  $("eHidden").textContent = s.exp_hidden; $("eMed").textContent = s.exp_med;
+  document.querySelectorAll(".bed").forEach(el => el.onclick = () => { sel = +el.dataset.i; render(); detail(); });
+  if (sel !== null) detail();
+}
+
+function detail(){
+  const b = D.beds[sel], s = scen(), shown = s.risk[sel];
+  const pL = D.scenarios[k("light")].p_down[sel], pD = D.scenarios[k("dark")].p_down[sel];
+  const hidden = shown < b.true;
+  let note;
+  if (hidden && b.second > shown) note = `<div class="callout good"><b>Second check flags this bed.</b> Without looking at the oximeter, the model rates this patient <b>${L[b.second]}</b>, higher than the ${L[shown]} on screen. Take another look, and confirm oxygen with a blood gas.</div>`;
+  else if (hidden) note = `<div class="callout bad"><b>Hidden, and the second check misses it.</b> This patient's risk lives mostly in the oxygen reading, the one number the second check ignores.</div>`;
+  else if (b.second > shown) note = `<div class="callout">Second check rates this patient higher (${L[b.second]}) than the screen. A false alarm here, but a cheap one.</div>`;
+  else note = `<div class="callout">The displayed risk matches the true risk in this scenario.</div>`;
+  $("detail").innerHTML = `
+    <h2>Bed ${sel+1} <span class="muted">· ${b.id}</span></h2>
+    <p class="muted">SpO<sub>2</sub> scale ${b.scale}, ${b.o2 ? "on supplemental oxygen" : "room air"}</p>
+    <div class="row"><span>True oxygen</span><b>${b.spo2}%</b></div>
+    <div class="row"><span>Oximeter shows</span><b>${s.shown[sel]}%</b></div>
+    <div class="row"><span>True risk (NEWS2)</span>${pill(b.true)}</div>
+    <div class="row"><span>Risk on screen</span>${pill(shown)}</div>
+    <div class="row"><span>Second check</span>${pill(b.second)}</div>
+    <div class="row"><span>Other vitals</span><span class="muted">RR ${b.rr} · HR ${b.hr} · BP ${b.sbp} · ${b.temp}°C · ${b.avpu}</span></div>
+    <div class="bars"><div class="muted" style="margin-top:8px">Chance the oximeter hides this patient's risk (1,000 simulated readings)</div>
+      <div class="bar"><span style="width:74px">Light skin</span><div class="track"><div class="fill" style="width:${pL*100}%"></div></div><b>${Math.round(pL*100)}%</b></div>
+      <div class="bar"><span style="width:74px">Dark skin</span><div class="track"><div class="fill" style="width:${pD*100}%;background:var(--high)"></div></div><b>${Math.round(pD*100)}%</b></div>
+    </div>${note}`;
+}
+
+document.querySelectorAll("#profile button").forEach(btn => btn.onclick = () => {
+  document.querySelectorAll("#profile button").forEach(x => x.classList.remove("on"));
+  btn.classList.add("on"); profile = btn.dataset.v; render();
+});
+$("offset").oninput = e => { offIdx = +e.target.value; render(); };
+$("reveal").onchange = render; $("second").onchange = render;
+render();
+</script>
+</body>
+</html>

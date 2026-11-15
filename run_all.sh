@@ -37,3 +37,6 @@ python src/tipping_point.py
 
 echo "== Step 8: subgroup analysis and failure examples =="
 python src/subgroups.py
+
+echo "== Step 9: build interactive ward view (docs/index.html) =="
+python src/build_ward_view.py
