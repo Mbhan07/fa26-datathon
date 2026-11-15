@@ -1,0 +1,31 @@
+subgroup,level,n,system,accuracy,macro_F1,High_recall,under_triage_rate
+SpO2 scale,Scale 1,876,NEWS2 (published),1.0,1.0,1.0,0.0
+SpO2 scale,Scale 1,876,Gradient boosting,0.967,0.969,0.972,0.019
+SpO2 scale,Scale 1,876,No-SpO2 second check,0.901,0.907,0.972,0.053
+SpO2 scale,"Scale 2, on oxygen",71,NEWS2 (published),1.0,1.0,1.0,0.0
+SpO2 scale,"Scale 2, on oxygen",71,Gradient boosting,0.986,0.982,0.981,0.014
+SpO2 scale,"Scale 2, on oxygen",71,No-SpO2 second check,0.972,0.964,0.981,0.014
+SpO2 scale,"Scale 2, room air",53,NEWS2 (published),0.755,0.604,1.0,0.245
+SpO2 scale,"Scale 2, room air",53,Gradient boosting,0.943,0.925,1.0,0.0
+SpO2 scale,"Scale 2, room air",53,No-SpO2 second check,0.962,0.946,0.917,0.019
+Supplemental oxygen,Room air,726,NEWS2 (published),0.982,0.986,1.0,0.018
+Supplemental oxygen,Room air,726,Gradient boosting,0.968,0.969,0.949,0.014
+Supplemental oxygen,Room air,726,No-SpO2 second check,0.894,0.908,0.949,0.054
+Supplemental oxygen,On oxygen,274,NEWS2 (published),1.0,1.0,1.0,0.0
+Supplemental oxygen,On oxygen,274,Gradient boosting,0.964,0.697,0.989,0.029
+Supplemental oxygen,On oxygen,274,No-SpO2 second check,0.949,0.903,0.983,0.033
+Consciousness,Alert,914,NEWS2 (published),0.986,0.988,1.0,0.014
+Consciousness,Alert,914,Gradient boosting,0.966,0.969,0.97,0.018
+Consciousness,Alert,914,No-SpO2 second check,0.903,0.91,0.97,0.05
+Consciousness,Altered (C/V/P/U),86,NEWS2 (published),1.0,1.0,1.0,0.0
+Consciousness,Altered (C/V/P/U),86,Gradient boosting,0.977,0.627,0.987,0.023
+Consciousness,Altered (C/V/P/U),86,No-SpO2 second check,0.977,0.943,0.974,0.023
+True oxygen,>=92,692,NEWS2 (published),0.981,0.986,1.0,0.019
+True oxygen,>=92,692,Gradient boosting,0.961,0.963,0.946,0.02
+True oxygen,>=92,692,No-SpO2 second check,0.905,0.922,0.982,0.035
+True oxygen,88-91 (borderline),184,NEWS2 (published),1.0,1.0,1.0,0.0
+True oxygen,88-91 (borderline),184,Gradient boosting,0.973,0.973,0.97,0.016
+True oxygen,88-91 (borderline),184,No-SpO2 second check,0.897,0.622,0.99,0.098
+True oxygen,<88 (hypoxemic),124,NEWS2 (published),1.0,1.0,1.0,0.0
+True oxygen,<88 (hypoxemic),124,Gradient boosting,0.992,0.498,0.992,0.008
+True oxygen,<88 (hypoxemic),124,No-SpO2 second check,0.952,0.488,0.952,0.048

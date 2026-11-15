@@ -1,0 +1,14 @@
+# OpenOximetry raw data is under the PhysioNet Restricted Health Data License.
+# Never commit it. Only the aggregate results/openox_error_model.json is shared.
+openox/
+bloodgas.csv
+pulseoximeter.csv
+encounter.csv
+patient.csv
+spectrophotometer.csv
+devices.csv
+waveforms/
+
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store

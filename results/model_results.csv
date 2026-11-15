@@ -1,0 +1,6 @@
+,macro_F1,High_recall,QW_kappa
+Majority class,0.117,0.0,0.0
+NEWS2 (published rule),0.982,1.0,0.991
+Logistic regression,0.954,0.964,0.979
+Gradient boosting,0.945,0.946,0.972
+"Gradient boosting, no SpO2",0.901,0.929,0.949

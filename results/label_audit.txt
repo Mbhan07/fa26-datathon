@@ -1,0 +1,12 @@
+Agreement, published NEWS2 vs dataset labels: 98.7%
+Mismatches: 13 (all scale 2 on room air: True)
+Agreement if scale-2 always uses on-oxygen thresholds: 100.0%
+Scale-2 patients on room air: 53; with SpO2 >= 93 (over-scored): 19
+
+Rows = dataset label, columns = published NEWS2
+news2_risk  Normal  Low  Medium  High
+Risk_Level                           
+Normal         160    0       0     0
+Low              0  255       0     0
+Medium           0   13     293     0
+High             0    0       0   279

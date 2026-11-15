@@ -1,0 +1,4 @@
+group,mean,lo95,hi95
+Light (Monk A-C),0.35,0.298,0.405
+Medium (Monk D-G),0.286,0.229,0.343
+Dark (Monk H-J),0.346,0.283,0.405
